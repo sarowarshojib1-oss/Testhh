@@ -141,17 +141,25 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
   };
 
   // Render: Iframe Fallback (Standard Google Player) - Only shown if native fails
+  // We apply a crop technique here to hide the top bar (pop-out button)
   if (useIframe) {
     return (
-      <div className="w-full max-w-[900px] mx-auto bg-black rounded-xl overflow-hidden shadow-2xl">
-        <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
+      <div className="w-full max-w-[900px] mx-auto bg-black rounded-xl overflow-hidden shadow-2xl relative group">
+        <div className="relative w-full overflow-hidden" style={{ paddingTop: '56.25%' }}>
           <iframe
             src={embedUrl}
-            className="absolute top-0 left-0 w-full h-full border-0"
+            className="absolute left-0 w-full border-0"
+            // Shift up by 60px to hide the top bar, increase height to keep bottom controls
+            style={{ 
+              top: '-60px', 
+              height: 'calc(100% + 60px)' 
+            }}
             allow="autoplay; fullscreen"
             title="Video Content"
           />
         </div>
+        {/* Invisible overlay on top right to prevent clicking any remaining sliver of the button */}
+        <div className="absolute top-0 right-0 w-24 h-16 z-20 pointer-events-auto cursor-default" />
       </div>
     );
   }
