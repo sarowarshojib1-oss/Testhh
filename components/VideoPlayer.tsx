@@ -48,14 +48,30 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = '
   // --- YouTube Renderer ---
   if (videoType === 'youtube') {
     return (
-      <div className="w-full max-w-[900px] mx-auto bg-black rounded-xl overflow-hidden shadow-2xl relative" style={{ paddingTop: '56.25%' }}>
-        <iframe
-          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
-          className="absolute top-0 left-0 w-full h-full border-0"
-          allow="autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-          title="YouTube Video"
-          allowFullScreen
-        />
+      <div className="w-full max-w-[900px] mx-auto bg-black rounded-xl overflow-hidden shadow-2xl relative group">
+        <div className="relative w-full overflow-hidden" style={{ paddingTop: '56.25%' }}>
+          <iframe
+            // Parameters Explanation:
+            // modestbranding=1: Removes YouTube logo from control bar (where possible)
+            // rel=0: Limits related videos
+            // iv_load_policy=3: Hides video annotations
+            // controls=1: Keeps bottom controls visible
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1`}
+            className="absolute left-0 w-full border-0"
+            // CSS Hack to hide the Top Title/Channel Bar:
+            // We shift the iframe up by 65px (negative top) to push the title bar out of the container.
+            // We increase height to compensate so the bottom controls stay visible.
+            style={{ 
+              top: '-65px', 
+              height: 'calc(100% + 65px)' 
+            }}
+            allow="autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+            title="YouTube Video"
+            allowFullScreen
+          />
+        </div>
+        {/* Extra layer to block interactions with top-right 'Watch Later/Share' buttons if they peek through */}
+        <div className="absolute top-0 right-0 w-40 h-16 z-20 pointer-events-auto cursor-default" />
       </div>
     );
   }
