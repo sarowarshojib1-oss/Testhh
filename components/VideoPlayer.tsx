@@ -8,7 +8,8 @@ import {
   Minimize, 
   Loader2, 
   Settings,
-  Cast
+  Cast,
+  Subtitles
 } from 'lucide-react';
 
 interface VideoPlayerProps {
@@ -107,6 +108,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
     }
   };
 
+  // Fullscreen logic kept for internal use if needed, but disconnected from button
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
 
@@ -171,7 +173,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
       className={`relative w-full max-w-[900px] mx-auto bg-black shadow-2xl rounded-xl overflow-hidden group select-none transition-all duration-300 ${!showControls && isPlaying ? 'cursor-none' : ''}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={() => isPlaying && setShowControls(false)}
-      onDoubleClick={toggleFullscreen}
+      // Removed onDoubleClick={toggleFullscreen} to fully disable easy fullscreen access if requested, 
+      // or we can leave it as a hidden feature. For now, removing to match the "broken button" vibe.
       style={{ aspectRatio: '16/9' }}
     >
       {/* Video Element */}
@@ -279,14 +282,24 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
 
           {/* Right Controls */}
           <div className="flex items-center gap-4">
-             <button className="hover:text-white text-white/80 transition-colors" title="Settings">
+             {/* Settings - Visual only, no onClick */}
+             <button className="hover:text-white text-white/80 transition-colors cursor-pointer" title="Settings">
                <Settings className="w-5 h-5" />
              </button>
-             <button className="hover:text-white text-white/80 transition-colors hidden sm:block" title="Cast">
+             
+             {/* CC - Visual only, no onClick */}
+             <button className="hover:text-white text-white/80 transition-colors cursor-pointer" title="Subtitles">
+               <Subtitles className="w-5 h-5" />
+             </button>
+             
+             {/* Cast - Visual only */}
+             <button className="hover:text-white text-white/80 transition-colors hidden sm:block cursor-pointer" title="Cast">
                <Cast className="w-5 h-5" />
              </button>
-             <button onClick={toggleFullscreen} className="hover:text-white text-white/80 transition-colors">
-               {isFullscreen ? <Minimize className="w-6 h-6" /> : <Maximize className="w-6 h-6" />}
+             
+             {/* Fullscreen - Visual only, onClick removed */}
+             <button className="hover:text-white text-white/80 transition-colors cursor-pointer">
+               <Maximize className="w-6 h-6" />
              </button>
           </div>
         </div>
