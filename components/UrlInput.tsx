@@ -22,7 +22,7 @@ export const UrlInput: React.FC<UrlInputProps> = ({ onSubmit }) => {
         <input
           type="text"
           className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 sm:text-sm"
-          placeholder="Paste Drive, YouTube, or Facebook Link"
+          placeholder="Paste Drive, YouTube, FB, or Pinterest Link"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
         />

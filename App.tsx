@@ -27,13 +27,14 @@ const App: React.FC = () => {
     if (source) {
       setCurrentVideo(source);
     } else {
-       setError("Could not recognize a valid Google Drive, YouTube, or Facebook link.");
+       setError("Could not recognize a valid Google Drive, YouTube, Facebook, or Pinterest link.");
     }
   }, []);
 
   const getSourceLabel = (type: string) => {
     if (type === 'youtube') return 'YouTube';
     if (type === 'facebook') return 'Facebook';
+    if (type === 'pinterest') return 'Pinterest';
     return 'Drive';
   };
 
@@ -49,7 +50,7 @@ const App: React.FC = () => {
               Universal Video Player
             </h1>
             <p className="text-slate-500 max-w-lg mx-auto">
-              Embed and play videos seamlessly from Google Drive, YouTube, or Facebook.
+              Embed and play videos seamlessly from Google Drive, YouTube, Facebook, or Pinterest.
             </p>
           </div>
 

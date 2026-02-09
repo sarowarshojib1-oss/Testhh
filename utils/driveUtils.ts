@@ -2,12 +2,12 @@
  * Video Source Type Definition
  */
 export type VideoSource = {
-  type: 'drive' | 'youtube' | 'facebook';
+  type: 'drive' | 'youtube' | 'facebook' | 'pinterest';
   id: string;
 };
 
 /**
- * Extracts the ID and Source Type from a URL (Google Drive, YouTube, or Facebook).
+ * Extracts the ID and Source Type from a URL (Google Drive, YouTube, Facebook, or Pinterest).
  * 
  * @param url The input URL string
  * @returns The source object { type, id } or null if not found
@@ -26,13 +26,20 @@ export const extractVideoSource = (url: string): VideoSource | null => {
 
   // 2. Facebook Patterns
   // Covers: facebook.com/..., fb.watch/..., fb.com/...
-  // For Facebook, we need the full URL for the embed plugin, so we return the whole string as the 'id'
   const fbRegex = /(?:https?:\/\/)?(?:www\.|web\.|m\.)?(?:facebook|fb)\.(?:com|watch)\/(?:.+)/i;
   if (fbRegex.test(trimmed)) {
     return { type: 'facebook', id: trimmed };
   }
 
-  // 3. Google Drive Patterns
+  // 3. Pinterest Patterns
+  // Covers: pinterest.com/pin/ID, pin.it/ID
+  // We return the full URL as ID because the embed script needs the href
+  const pinRegex = /(?:pinterest\.(?:com|co\.[a-z]{2}|ca|de|fr|jp)\/pin\/|pin\.it\/)/i;
+  if (pinRegex.test(trimmed)) {
+    return { type: 'pinterest', id: trimmed };
+  }
+
+  // 4. Google Drive Patterns
   const drivePatterns = [
     /\/file\/d\/([a-zA-Z0-9_-]+)/, // .../file/d/ID...
     /\/open\?id=([a-zA-Z0-9_-]+)/, // .../open?id=ID...

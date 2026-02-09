@@ -13,7 +13,7 @@ import {
 
 interface VideoPlayerProps {
   videoId: string;
-  videoType?: 'drive' | 'youtube' | 'facebook';
+  videoType?: 'drive' | 'youtube' | 'facebook' | 'pinterest';
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = 'drive' }) => {
@@ -42,6 +42,26 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = '
     setDuration(0);
     setIsLoading(true);
     setShowControls(true);
+  }, [videoId, videoType]);
+
+  // Handle Pinterest Script Injection
+  useEffect(() => {
+    if (videoType === 'pinterest') {
+      const globalPinUtils = (window as any).PinUtils;
+      if (globalPinUtils) {
+        // If script is already loaded, rebuild the widgets
+        globalPinUtils.build();
+      } else {
+        // Load the script if not present
+        if (!document.querySelector('script[src*="pinit.js"]')) {
+          const script = document.createElement('script');
+          script.src = 'https://assets.pinterest.com/js/pinit.js';
+          script.async = true;
+          script.defer = true;
+          document.body.appendChild(script);
+        }
+      }
+    }
   }, [videoId, videoType]);
 
   // --- YouTube Renderer ---
@@ -90,6 +110,21 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = '
             title="Facebook Video"
           />
         </div>
+      </div>
+    );
+  }
+
+  // --- Pinterest Renderer ---
+  if (videoType === 'pinterest') {
+    return (
+      <div className="w-full max-w-[900px] mx-auto bg-slate-100 rounded-xl overflow-hidden shadow-xl relative min-h-[400px] flex items-center justify-center p-8">
+        <a 
+          data-pin-do="embedPin" 
+          data-pin-width="large" 
+          href={videoId}
+          className="flex justify-center"
+        >
+        </a>
       </div>
     );
   }
