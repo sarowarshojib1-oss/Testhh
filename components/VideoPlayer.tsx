@@ -5,16 +5,15 @@ import {
   Volume2, 
   VolumeX, 
   Maximize, 
-  Minimize, 
-  Loader2, 
   Settings,
   Cast,
-  Subtitles
+  Subtitles,
+  Loader2
 } from 'lucide-react';
 
 interface VideoPlayerProps {
   videoId: string;
-  videoType?: 'drive' | 'youtube';
+  videoType?: 'drive' | 'youtube' | 'facebook';
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = 'drive' }) => {
@@ -72,6 +71,25 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = '
         </div>
         {/* Extra layer to block interactions with top-right 'Watch Later/Share' buttons if they peek through */}
         <div className="absolute top-0 right-0 w-40 h-16 z-20 pointer-events-auto cursor-default" />
+      </div>
+    );
+  }
+
+  // --- Facebook Renderer ---
+  if (videoType === 'facebook') {
+    return (
+      <div className="w-full max-w-[900px] mx-auto bg-black rounded-xl overflow-hidden shadow-2xl relative">
+        <div className="relative w-full overflow-hidden" style={{ paddingTop: '56.25%' }}>
+          <iframe
+            src={`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(videoId)}&show_text=false&t=0`}
+            className="absolute top-0 left-0 w-full h-full border-0"
+            style={{ border: 'none', overflow: 'hidden' }}
+            scrolling="no"
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+            allowFullScreen={true}
+            title="Facebook Video"
+          />
+        </div>
       </div>
     );
   }

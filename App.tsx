@@ -27,9 +27,15 @@ const App: React.FC = () => {
     if (source) {
       setCurrentVideo(source);
     } else {
-       setError("Could not recognize a valid Google Drive or YouTube link.");
+       setError("Could not recognize a valid Google Drive, YouTube, or Facebook link.");
     }
   }, []);
+
+  const getSourceLabel = (type: string) => {
+    if (type === 'youtube') return 'YouTube';
+    if (type === 'facebook') return 'Facebook';
+    return 'Drive';
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -43,7 +49,7 @@ const App: React.FC = () => {
               Universal Video Player
             </h1>
             <p className="text-slate-500 max-w-lg mx-auto">
-              Embed and play videos seamlessly from Google Drive or YouTube.
+              Embed and play videos seamlessly from Google Drive, YouTube, or Facebook.
             </p>
           </div>
 
@@ -60,7 +66,7 @@ const App: React.FC = () => {
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex items-center gap-2 text-slate-800 font-semibold px-2">
                <PlayCircle className="w-5 h-5 text-blue-600" />
-               <h2>Now Playing ({currentVideo.type === 'youtube' ? 'YouTube' : 'Drive'})</h2>
+               <h2>Now Playing ({getSourceLabel(currentVideo.type)})</h2>
             </div>
             
             <VideoPlayer videoId={currentVideo.id} videoType={currentVideo.type} />

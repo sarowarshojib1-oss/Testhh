@@ -2,12 +2,12 @@
  * Video Source Type Definition
  */
 export type VideoSource = {
-  type: 'drive' | 'youtube';
+  type: 'drive' | 'youtube' | 'facebook';
   id: string;
 };
 
 /**
- * Extracts the ID and Source Type from a URL (Google Drive or YouTube).
+ * Extracts the ID and Source Type from a URL (Google Drive, YouTube, or Facebook).
  * 
  * @param url The input URL string
  * @returns The source object { type, id } or null if not found
@@ -24,7 +24,15 @@ export const extractVideoSource = (url: string): VideoSource | null => {
     return { type: 'youtube', id: ytMatch[1] };
   }
 
-  // 2. Google Drive Patterns
+  // 2. Facebook Patterns
+  // Covers: facebook.com/..., fb.watch/..., fb.com/...
+  // For Facebook, we need the full URL for the embed plugin, so we return the whole string as the 'id'
+  const fbRegex = /(?:https?:\/\/)?(?:www\.|web\.|m\.)?(?:facebook|fb)\.(?:com|watch)\/(?:.+)/i;
+  if (fbRegex.test(trimmed)) {
+    return { type: 'facebook', id: trimmed };
+  }
+
+  // 3. Google Drive Patterns
   const drivePatterns = [
     /\/file\/d\/([a-zA-Z0-9_-]+)/, // .../file/d/ID...
     /\/open\?id=([a-zA-Z0-9_-]+)/, // .../open?id=ID...
