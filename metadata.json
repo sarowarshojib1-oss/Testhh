@@ -1,0 +1,5 @@
+{
+  "name": "DriveStream Player",
+  "description": "A modern, responsive React application to embed and play Google Drive videos seamlessly using the preview interface.",
+  "requestFramePermissions": []
+}
