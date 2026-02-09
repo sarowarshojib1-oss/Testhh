@@ -14,9 +14,10 @@ import {
 
 interface VideoPlayerProps {
   videoId: string;
+  videoType?: 'drive' | 'youtube';
 }
 
-export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
+export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = 'drive' }) => {
   const [useIframe, setUseIframe] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -32,7 +33,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
   const controlsTimeoutRef = useRef<number | null>(null);
 
   // URLs
-  // Using 'uc' (User Content) export for direct stream where possible
   const nativeUrl = `https://drive.google.com/uc?export=download&id=${videoId}`;
   const embedUrl = `https://drive.google.com/file/d/${videoId}/preview`;
 
@@ -43,7 +43,24 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
     setDuration(0);
     setIsLoading(true);
     setShowControls(true);
-  }, [videoId]);
+  }, [videoId, videoType]);
+
+  // --- YouTube Renderer ---
+  if (videoType === 'youtube') {
+    return (
+      <div className="w-full max-w-[900px] mx-auto bg-black rounded-xl overflow-hidden shadow-2xl relative" style={{ paddingTop: '56.25%' }}>
+        <iframe
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+          className="absolute top-0 left-0 w-full h-full border-0"
+          allow="autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+          title="YouTube Video"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  // --- Google Drive Renderer (Custom UI) ---
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -108,14 +125,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
     }
   };
 
-  // Fullscreen logic kept for internal use if needed, but disconnected from button
+  // Internal fullscreen logic (disconnected from button as per request)
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
-
     if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().catch(err => {
-        console.error(`Error attempting to enable fullscreen: ${err.message}`);
-      });
+      containerRef.current.requestFullscreen().catch(err => console.error(err));
       setIsFullscreen(true);
     } else {
       document.exitFullscreen();
@@ -123,7 +137,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
     }
   };
 
-  // Automatically fall back to iframe if the "native" video fails to load (e.g. CORS or Codec issues)
   const handleError = () => {
     console.warn("Stream playback failed. Falling back to universal player.");
     setUseIframe(true);
@@ -143,7 +156,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
   };
 
   // Render: Iframe Fallback (Standard Google Player) - Only shown if native fails
-  // We apply a crop technique here to hide the top bar (pop-out button)
   if (useIframe) {
     return (
       <div className="w-full max-w-[900px] mx-auto bg-black rounded-xl overflow-hidden shadow-2xl relative group">
@@ -151,7 +163,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
           <iframe
             src={embedUrl}
             className="absolute left-0 w-full border-0"
-            // Shift up by 60px to hide the top bar, increase height to keep bottom controls
+            // Shift up by 60px to hide the top bar
             style={{ 
               top: '-60px', 
               height: 'calc(100% + 60px)' 
@@ -166,18 +178,15 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
     );
   }
 
-  // Render: Custom "Pro" Player
+  // Render: Custom "Pro" Player (Drive Only)
   return (
     <div 
       ref={containerRef}
       className={`relative w-full max-w-[900px] mx-auto bg-black shadow-2xl rounded-xl overflow-hidden group select-none transition-all duration-300 ${!showControls && isPlaying ? 'cursor-none' : ''}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={() => isPlaying && setShowControls(false)}
-      // Removed onDoubleClick={toggleFullscreen} to fully disable easy fullscreen access if requested, 
-      // or we can leave it as a hidden feature. For now, removing to match the "broken button" vibe.
       style={{ aspectRatio: '16/9' }}
     >
-      {/* Video Element */}
       <video
         ref={videoRef}
         src={nativeUrl}
@@ -192,7 +201,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
         crossOrigin="anonymous" 
       />
 
-      {/* Loading Spinner */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-40 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-3">
@@ -219,7 +227,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
       >
         {/* Progress Bar Container */}
         <div className="relative w-full h-1.5 group/slider mb-4 cursor-pointer flex items-center">
-           {/* Seek Input (Hidden but functional) */}
+           {/* Seek Input */}
            <input
             type="range"
             min="0"
@@ -231,10 +239,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
           
           {/* Background Track */}
           <div className="absolute w-full h-1 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm group-hover/slider:h-1.5 transition-all">
-             {/* Buffered/Loaded (Simulated for UI) */}
              <div className="absolute top-0 left-0 h-full w-full bg-white/10" />
-             
-             {/* Active Progress */}
              <div 
                className="h-full bg-blue-500 relative transition-all duration-100 ease-out"
                style={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
@@ -280,7 +285,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId }) => {
             </span>
           </div>
 
-          {/* Right Controls */}
+          {/* Right Controls - "Broken" Buttons as requested */}
           <div className="flex items-center gap-4">
              {/* Settings - Visual only, no onClick */}
              <button className="hover:text-white text-white/80 transition-colors cursor-pointer" title="Settings">

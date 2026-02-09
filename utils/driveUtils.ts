@@ -1,31 +1,49 @@
 /**
- * Extracts the Google Drive File ID from a variety of URL formats.
- * 
- * Supported formats:
- * - https://drive.google.com/file/d/VIDEO_ID/view
- * - https://drive.google.com/file/d/VIDEO_ID/preview
- * - https://drive.google.com/open?id=VIDEO_ID
- * - https://docs.google.com/file/d/VIDEO_ID/edit
+ * Video Source Type Definition
+ */
+export type VideoSource = {
+  type: 'drive' | 'youtube';
+  id: string;
+};
+
+/**
+ * Extracts the ID and Source Type from a URL (Google Drive or YouTube).
  * 
  * @param url The input URL string
- * @returns The extracted ID or null if not found
+ * @returns The source object { type, id } or null if not found
  */
-export const extractDriveId = (url: string): string | null => {
+export const extractVideoSource = (url: string): VideoSource | null => {
   if (!url) return null;
+  const trimmed = url.trim();
 
-  // Regex to match /d/ID/ or id=ID patterns
-  const patterns = [
-    /\/file\/d\/([a-zA-Z0-9_-]+)/, // matches .../file/d/ID...
-    /\/open\?id=([a-zA-Z0-9_-]+)/, // matches .../open?id=ID...
-    /^([a-zA-Z0-9_-]+)$/           // matches raw ID provided directly
+  // 1. YouTube Patterns
+  // Covers: youtube.com/watch?v=ID, youtube.com/embed/ID, youtu.be/ID
+  const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+  const ytMatch = trimmed.match(youtubeRegex);
+  if (ytMatch && ytMatch[1]) {
+    return { type: 'youtube', id: ytMatch[1] };
+  }
+
+  // 2. Google Drive Patterns
+  const drivePatterns = [
+    /\/file\/d\/([a-zA-Z0-9_-]+)/, // .../file/d/ID...
+    /\/open\?id=([a-zA-Z0-9_-]+)/, // .../open?id=ID...
+    /\/uc\?.*id=([a-zA-Z0-9_-]+)/, // .../uc?id=ID...
+    /^([a-zA-Z0-9_-]{20,})$/       // Raw Drive ID (assuming long enough string)
   ];
 
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
+  for (const pattern of drivePatterns) {
+    const match = trimmed.match(pattern);
     if (match && match[1]) {
-      return match[1];
+      return { type: 'drive', id: match[1] };
     }
   }
 
   return null;
+};
+
+// Deprecated: kept for backward compatibility if needed, but App.tsx will use extractVideoSource
+export const extractDriveId = (url: string): string | null => {
+  const result = extractVideoSource(url);
+  return result && result.type === 'drive' ? result.id : null;
 };
