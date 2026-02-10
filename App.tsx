@@ -27,7 +27,7 @@ const App: React.FC = () => {
     if (source) {
       setCurrentVideo(source);
     } else {
-       setError("Could not recognize a valid Google Drive, YouTube, Facebook, or Pinterest link.");
+       setError("Could not recognize a valid Google Drive, YouTube, Facebook, Pinterest, or Pixabay link.");
     }
   }, []);
 
@@ -35,6 +35,7 @@ const App: React.FC = () => {
     if (type === 'youtube') return 'YouTube';
     if (type === 'facebook') return 'Facebook';
     if (type === 'pinterest') return 'Pinterest';
+    if (type === 'pixabay') return 'Pixabay';
     return 'Drive';
   };
 
@@ -50,7 +51,7 @@ const App: React.FC = () => {
               Universal Video Player
             </h1>
             <p className="text-slate-500 max-w-lg mx-auto">
-              Embed and play videos seamlessly from Google Drive, YouTube, Facebook, or Pinterest.
+              Embed and play videos seamlessly from Google Drive, YouTube, Facebook, Pinterest, or Pixabay.
             </p>
           </div>
 
@@ -83,6 +84,19 @@ const App: React.FC = () => {
                       <li>Ensure the video file is shared as <strong>"Anyone with the link"</strong> on Drive.</li>
                       <li>Large files or files with high traffic may require the fallback player.</li>
                     </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+             {currentVideo.type === 'pixabay' && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold text-blue-900">Pixabay Tip</h3>
+                    <p className="text-sm text-blue-800">
+                      Ensure you are using the direct video URL ending in <strong>.mp4</strong> for the best experience.
+                    </p>
                   </div>
                 </div>
               </div>

@@ -2,12 +2,12 @@
  * Video Source Type Definition
  */
 export type VideoSource = {
-  type: 'drive' | 'youtube' | 'facebook' | 'pinterest';
+  type: 'drive' | 'youtube' | 'facebook' | 'pinterest' | 'pixabay';
   id: string;
 };
 
 /**
- * Extracts the ID and Source Type from a URL (Google Drive, YouTube, Facebook, or Pinterest).
+ * Extracts the ID and Source Type from a URL (Google Drive, YouTube, Facebook, Pinterest, or Pixabay).
  * 
  * @param url The input URL string
  * @returns The source object { type, id } or null if not found
@@ -39,7 +39,14 @@ export const extractVideoSource = (url: string): VideoSource | null => {
     return { type: 'pinterest', id: trimmed };
   }
 
-  // 4. Google Drive Patterns
+  // 4. Pixabay Patterns (Direct MP4 links)
+  // Covers: https://cdn.pixabay.com/.../video.mp4
+  const pixabayRegex = /pixabay\.com\/.*\.mp4/i;
+  if (pixabayRegex.test(trimmed)) {
+    return { type: 'pixabay', id: trimmed };
+  }
+
+  // 5. Google Drive Patterns
   const drivePatterns = [
     /\/file\/d\/([a-zA-Z0-9_-]+)/, // .../file/d/ID...
     /\/open\?id=([a-zA-Z0-9_-]+)/, // .../open?id=ID...

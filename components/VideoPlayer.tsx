@@ -13,7 +13,7 @@ import {
 
 interface VideoPlayerProps {
   videoId: string;
-  videoType?: 'drive' | 'youtube' | 'facebook' | 'pinterest';
+  videoType?: 'drive' | 'youtube' | 'facebook' | 'pinterest' | 'pixabay';
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = 'drive' }) => {
@@ -32,7 +32,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = '
   const controlsTimeoutRef = useRef<number | null>(null);
 
   // URLs
-  const nativeUrl = `https://drive.google.com/uc?export=download&id=${videoId}`;
+  // For Pixabay, videoId is the direct URL. For Drive, we construct the proxy URL.
+  const nativeUrl = videoType === 'pixabay' 
+    ? videoId 
+    : `https://drive.google.com/uc?export=download&id=${videoId}`;
+    
   const embedUrl = `https://drive.google.com/file/d/${videoId}/preview`;
 
   useEffect(() => {
@@ -129,7 +133,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = '
     );
   }
 
-  // --- Google Drive Renderer (Custom UI) ---
+  // --- Google Drive & Pixabay Renderer (Custom UI) ---
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -207,6 +211,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = '
   };
 
   const handleError = () => {
+    if (videoType === 'pixabay') {
+      console.warn("Pixabay video failed to load. The link might be expired or restricted.");
+      setIsLoading(false);
+      return;
+    }
     console.warn("Stream playback failed. Falling back to universal player.");
     setUseIframe(true);
     setIsLoading(false);
@@ -224,8 +233,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = '
     }, 2500);
   };
 
-  // Render: Iframe Fallback (Standard Google Player) - Only shown if native fails
-  if (useIframe) {
+  // Render: Iframe Fallback (Standard Google Player) - Only shown if native Drive playback fails
+  if (useIframe && videoType === 'drive') {
     return (
       <div className="w-full max-w-[900px] mx-auto bg-black rounded-xl overflow-hidden shadow-2xl relative group">
         <div className="relative w-full overflow-hidden" style={{ paddingTop: '56.25%' }}>
@@ -247,7 +256,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = '
     );
   }
 
-  // Render: Custom "Pro" Player (Drive Only)
+  // Render: Custom "Pro" Player (Drive & Pixabay)
   return (
     <div 
       ref={containerRef}
