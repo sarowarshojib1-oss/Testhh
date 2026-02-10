@@ -36,7 +36,9 @@ export const extractVideoSource = (url: string): VideoSource | null => {
   // We return the full URL as ID because the embed script needs the href
   const pinRegex = /(?:pinterest\.(?:com|co\.[a-z]{2}|ca|de|fr|jp)\/pin\/|pin\.it\/)/i;
   if (pinRegex.test(trimmed)) {
-    return { type: 'pinterest', id: trimmed };
+    // Clean the URL by removing query parameters (e.g., ?invite_code=...)
+    const cleanId = trimmed.split('?')[0];
+    return { type: 'pinterest', id: cleanId };
   }
 
   // 4. Pixabay Patterns (Direct MP4 links OR Video Page links)

@@ -5,12 +5,12 @@ import {
   Volume2, 
   VolumeX, 
   Maximize, 
-  Settings,
-  Cast,
-  Subtitles,
-  Loader2,
-  FileVideo,
-  ExternalLink
+  Settings, 
+  Cast, 
+  Subtitles, 
+  Loader2, 
+  FileVideo, 
+  ExternalLink 
 } from 'lucide-react';
 
 interface VideoPlayerProps {
@@ -50,42 +50,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = '
     setShowControls(true);
   }, [videoId, videoType]);
 
-  // Handle Pinterest Script Injection
-  useEffect(() => {
-    if (videoType === 'pinterest') {
-      const globalPinUtils = (window as any).PinUtils;
-      if (globalPinUtils) {
-        // If script is already loaded, rebuild the widgets
-        globalPinUtils.build();
-      } else {
-        // Load the script if not present
-        if (!document.querySelector('script[src*="pinit.js"]')) {
-          const script = document.createElement('script');
-          script.src = 'https://assets.pinterest.com/js/pinit.js';
-          script.async = true;
-          script.defer = true;
-          document.body.appendChild(script);
-        }
-      }
-    }
-  }, [videoId, videoType]);
-
   // --- YouTube Renderer ---
   if (videoType === 'youtube') {
     return (
       <div className="w-full max-w-[900px] mx-auto bg-black rounded-xl overflow-hidden shadow-2xl relative group">
         <div className="relative w-full overflow-hidden" style={{ paddingTop: '56.25%' }}>
           <iframe
-            // Parameters Explanation:
-            // modestbranding=1: Removes YouTube logo from control bar (where possible)
-            // rel=0: Limits related videos
-            // iv_load_policy=3: Hides video annotations
-            // controls=1: Keeps bottom controls visible
             src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1`}
             className="absolute left-0 w-full border-0"
-            // CSS Hack to hide the Top Title/Channel Bar:
-            // We shift the iframe up by 65px (negative top) to push the title bar out of the container.
-            // We increase height to compensate so the bottom controls stay visible.
             style={{ 
               top: '-65px', 
               height: 'calc(100% + 65px)' 
@@ -95,7 +67,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = '
             allowFullScreen
           />
         </div>
-        {/* Extra layer to block interactions with top-right 'Watch Later/Share' buttons if they peek through */}
         <div className="absolute top-0 right-0 w-40 h-16 z-20 pointer-events-auto cursor-default" />
       </div>
     );
@@ -122,15 +93,70 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = '
 
   // --- Pinterest Renderer ---
   if (videoType === 'pinterest') {
+    // Stricter environment for Pinterest to prevent redirection.
+    // 1. Dark background to match player look.
+    // 2. JS event listener to kill all link clicks immediately.
+    // 3. CSS to disable pointer events on anchor tags (failsafe).
+    const pinterestHtml = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+          body { 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            background-color: #000; 
+            overflow: hidden;
+          }
+          /* Disable pointer events on links to prevent accidental navigation */
+          a {
+             cursor: default !important;
+          }
+        </style>
+      </head>
+      <body>
+        <!-- data-pin-terse="true" attempts to hide text/links -->
+        <a data-pin-do="embedPin" data-pin-width="large" data-pin-terse="true" href="${videoId}"></a>
+        <script async defer src="https://assets.pinterest.com/js/pinit.js"></script>
+        <script>
+            // Intercept and block all link clicks
+            document.addEventListener('click', function(e) {
+                // Check if the clicked element or any parent is an anchor tag
+                const link = e.target.closest('a');
+                if (link) {
+                    // Stop everything
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            }, true); // Capture phase to catch it early
+        </script>
+      </body>
+      </html>
+    `;
+
     return (
-      <div className="w-full max-w-[900px] mx-auto bg-slate-100 rounded-xl overflow-hidden shadow-xl relative min-h-[400px] flex items-center justify-center p-8">
-        <a 
-          data-pin-do="embedPin" 
-          data-pin-width="large" 
-          href={videoId}
-          className="flex justify-center"
-        >
-        </a>
+      <div className="w-full max-w-[600px] mx-auto bg-black rounded-xl overflow-hidden shadow-xl border border-slate-800 relative">
+        <div className="w-full h-[650px] relative">
+          <iframe 
+            srcDoc={pinterestHtml}
+            className="absolute inset-0 w-full h-full border-0"
+            title="Pinterest Video"
+            // STRICT SANDBOX:
+            // - allow-scripts: Needed for the player.
+            // - allow-presentation: Needed for fullscreen.
+            // - REMOVED: allow-same-origin (Prevents script from accessing top window location)
+            // - REMOVED: allow-top-navigation (Prevents standard redirects)
+            // - REMOVED: allow-popups (Prevents opening new tabs)
+            sandbox="allow-scripts allow-presentation"
+          />
+        </div>
       </div>
     );
   }
