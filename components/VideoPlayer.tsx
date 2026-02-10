@@ -8,7 +8,9 @@ import {
   Settings,
   Cast,
   Subtitles,
-  Loader2
+  Loader2,
+  FileVideo,
+  ExternalLink
 } from 'lucide-react';
 
 interface VideoPlayerProps {
@@ -133,7 +135,34 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoId, videoType = '
     );
   }
 
-  // --- Google Drive & Pixabay Renderer (Custom UI) ---
+  // --- Pixabay Page Helper (Non-MP4 link) ---
+  if (videoType === 'pixabay' && !videoId.match(/\.mp4($|\?)/i)) {
+    return (
+       <div className="w-full max-w-[900px] mx-auto bg-slate-900 rounded-xl overflow-hidden shadow-2xl relative flex flex-col items-center justify-center text-center p-8 text-white min-h-[400px]">
+        <div className="bg-blue-600/20 p-4 rounded-full mb-6 animate-pulse">
+           <FileVideo className="w-8 h-8 text-blue-400" />
+        </div>
+        <h3 className="text-xl md:text-2xl font-bold mb-3">Direct Video Link Required</h3>
+        <p className="text-slate-300 max-w-md mb-8 leading-relaxed">
+          You pasted a Pixabay <strong>page URL</strong>. To ensure high-quality playback, please provide the direct <strong>.mp4 video file URL</strong>.
+        </p>
+        
+        <div className="bg-slate-800/80 p-6 rounded-xl text-sm text-left w-full max-w-md border border-slate-700 shadow-inner">
+           <div className="flex items-center gap-2 mb-4 text-blue-400 font-semibold uppercase tracking-wider text-xs">
+             <ExternalLink className="w-4 h-4" /> Instructions
+           </div>
+           <ol className="list-decimal list-inside space-y-3 text-slate-300">
+             <li className="pl-1">Go back to the Pixabay video page.</li>
+             <li className="pl-1"><strong>Right-click</strong> directly on the video player.</li>
+             <li className="pl-1">Select <strong>"Copy Video Address"</strong> (or "Copy video URL").</li>
+             <li className="pl-1">Paste that link here (it must end in .mp4).</li>
+           </ol>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Google Drive & Pixabay (Direct MP4) Renderer (Custom UI) ---
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);

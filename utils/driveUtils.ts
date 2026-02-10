@@ -39,9 +39,10 @@ export const extractVideoSource = (url: string): VideoSource | null => {
     return { type: 'pinterest', id: trimmed };
   }
 
-  // 4. Pixabay Patterns (Direct MP4 links)
-  // Covers: https://cdn.pixabay.com/.../video.mp4
-  const pixabayRegex = /pixabay\.com\/.*\.mp4/i;
+  // 4. Pixabay Patterns (Direct MP4 links OR Video Page links)
+  // Covers: https://pixabay.com/videos/... AND https://cdn.pixabay.com/...mp4
+  // We accept page links to show a helpful message in the player
+  const pixabayRegex = /(?:pixabay\.com\/(?:videos\/|.*\.mp4))/i;
   if (pixabayRegex.test(trimmed)) {
     return { type: 'pixabay', id: trimmed };
   }
